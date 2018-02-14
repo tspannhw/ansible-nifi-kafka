@@ -1,0 +1,54 @@
+---
+# tasks file for nifi
+- import_tasks: filesys.yml
+
+- name: download and unarchive nifi-{{ nifi_version }}
+  unarchive:
+    src: "{{ nifi_download_url }}"
+    dest: "{{ nifi_install_dir | dirname }}"
+    creates: "{{ nifi_install_dir }}"
+    owner: "{{ nifi_user }}"
+    group: "{{ nifi_group }}"
+    remote_src: yes
+
+- name: create {{ nifi_install_dir }}/conf/nifi.properties
+  template:
+    src: nifi.properties.j2
+    dest: "{{ nifi_install_dir }}/conf/nifi.properties"
+    owner: "{{ nifi_user }}"
+    group: "{{ nifi_group }}"
+    mode: 0644
+  notify: restart nifi
+
+- name: create {{ nifi_install_dir }}/conf/bootstrap.conf
+  template:
+    src: bootstrap.conf.j2
+    dest: "{{ nifi_install_dir }}/conf/bootstrap.conf"
+    owner: "{{ nifi_user }}"
+    group: "{{ nifi_group }}"
+    mode: 0644
+  notify: restart nifi
+
+- name: create {{ nifi_install_dir }}/conf/logback.xml
+  template:
+    src: logback.xml.j2
+    dest: "{{ nifi_install_dir }}/conf/logback.xml"
+    owner: "{{ nifi_user }}"
+    group: "{{ nifi_group }}"
+    mode: 0644
+
+- name: create /etc/systemd/system/nifi.service
+  template:
+    src: nifi.service.j2
+    dest: /etc/systemd/system/nifi.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: start nifi
+
+- name: start nifi
+  systemd:
+    name: nifi
+    state: started
+    enabled: yes
+    daemon_reload: yes

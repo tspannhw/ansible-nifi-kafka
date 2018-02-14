@@ -1,0 +1,19 @@
+---
+# defaults file for nifi
+xfs_mount_opts: defaults,nobarrier,noatime
+apache_mirror: http://apache.osuosl.org
+nifi_version: 1.5.0
+nifi_download_url: "{{ apache_mirror }}/nifi/{{ nifi_version }}/nifi-{{ nifi_version }}-bin.zip"
+nifi_install_dir: /usr/local/nifi-{{ nifi_version }}
+nifi_user: root
+nifi_group: root
+nifi_min_memory: -Xms16g
+nifi_max_memory: -Xmx16g
+nifi_data_dir: /var/lib/nifi
+nifi_flowfile_repository: "{{ nifi_data_dir }}/flowfile_repository/flowfile_repository"
+nifi_content_repository: "{{ nifi_data_dir }}/content_repository/content_repository"
+nifi_provenance_repository: "{{ nifi_data_dir }}/provenance_repository/provenance_repository"
+nifi_provenance_repository_impl: org.apache.nifi.provenance.WriteAheadProvenanceRepository
+nifi_queue_swap_threshold: 1000000
+nifi_web_http_host: "{{ hostvars[inventory_hostname]['ec2_public_dns_name'] }}"
+nifi_cluster_node_address: "{{ hostvars[inventory_hostname]['ec2_private_ip_address'] }}"

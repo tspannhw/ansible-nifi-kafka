@@ -1,0 +1,50 @@
+---
+# tasks file for kafka
+- import_tasks: filesys.yml
+
+- name: download and unarchive kafka-{{ kafka_version }}
+  unarchive:
+    src: "{{ kafka_download_url }}"
+    dest: "{{ kafka_install_dir | dirname }}"
+    creates: "{{ kafka_install_dir }}"
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    remote_src: yes
+
+- name: create {{ kafka_install_dir }}/config/server.properties
+  template:
+    src: server.properties.j2
+    dest: "{{ kafka_install_dir }}/config/server.properties"
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    mode: 0644
+  notify: restart kafka
+
+- name: create /etc/systemd/system/kafka.service
+  template:
+    src: kafka.service.j2
+    dest: /etc/systemd/system/kafka.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: start kafka
+
+- name: start kafka
+  systemd:
+    name: kafka
+    state: started
+    enabled: yes
+    daemon_reload: yes
+
+- name: wait for kafka port
+  wait_for:
+    host: 0.0.0.0
+    port: 9092
+    delay: 10
+    timeout: 60
+
+- name: create {{ item }} topic
+  command: "{{ kafka_install_dir }}/bin/kafka-topics.sh --create --if-not-exists --topic {{ item }} --partitions {{ kafka_num_partitions }} --zookeeper localhost:2181 --replication-factor 3"
+  with_items:
+    - tweets
+    - test

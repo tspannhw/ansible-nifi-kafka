@@ -1,0 +1,105 @@
+---
+# filesystem setup tasks file for nifi
+- name: mkdir {{ nifi_data_dir }}
+  file:
+    path: "{{ nifi_data_dir }}"
+    state: directory
+    owner: "{{ nifi_user }}"
+    group: "{{ nifi_group }}"
+    mode: 0775
+
+- stat:
+    path: /dev/sdb
+  register: b
+
+- stat:
+    path: /dev/sdc
+  register: c
+
+- stat:
+    path: /dev/sdd
+  register: d
+
+- name: mkfs.xfs /dev/sdb
+  filesystem:
+    fstype: xfs
+    dev: /dev/sdb
+  when: b.stat.isblk is defined and b.stat.isblk == False
+
+- name: mkfs.xfs /dev/sdc
+  filesystem:
+    fstype: xfs
+    dev: /dev/sdc
+  when: c.stat.isblk is defined and c.stat.isblk == False
+
+- name: mkfs.xfs /dev/sdd
+  filesystem:
+    fstype: xfs
+    dev: /dev/sdd
+  when: d.stat.isblk is defined and d.stat.isblk == False
+
+- name: mkdir {{ nifi_flowfile_repository | dirname }}
+  file:
+    path: "{{ nifi_flowfile_repository | dirname }}"
+    state: directory
+    owner: "{{ nifi_user }}"
+    group: "{{ nifi_group }}"
+    mode: 0775
+  when: b.stat.isblk is defined and b.stat.isblk == False
+
+- name: mkdir {{ nifi_content_repository | dirname }}
+  file:
+    path: "{{ nifi_content_repository | dirname }}"
+    state: directory
+    owner: "{{ nifi_user }}"
+    group: "{{ nifi_group }}"
+    mode: 0775
+  when: c.stat.isblk is defined and c.stat.isblk == False
+
+- name: mkdir {{ nifi_provenance_repository | dirname }}
+  file:
+    path: "{{ nifi_provenance_repository | dirname }}"
+    state: directory
+    owner: "{{ nifi_user }}"
+    group: "{{ nifi_group }}"
+    mode: 0775
+  when: d.stat.isblk is defined and d.stat.isblk == False
+
+- name: mount /dev/sdb {{ nifi_flowfile_repository | dirname }}
+  mount:
+    path: "{{ nifi_flowfile_repository | dirname }}"
+    src: /dev/sdb
+    fstype: xfs
+    opts: "{{ xfs_mount_opts }}"
+    state: mounted
+  when: b.stat.isblk is defined and b.stat.isblk == False
+
+- name: mount /dev/sdc {{ nifi_content_repository | dirname }}
+  mount:
+    path: "{{ nifi_content_repository | dirname }}"
+    src: /dev/sdc
+    fstype: xfs
+    opts: "{{ xfs_mount_opts }}"
+    state: mounted
+  when: c.stat.isblk is defined and c.stat.isblk == False
+
+- name: mount /dev/sdd {{ nifi_provenance_repository | dirname }}
+  mount:
+    path: "{{ nifi_provenance_repository | dirname }}"
+    src: /dev/sdd
+    fstype: xfs
+    opts: "{{ xfs_mount_opts }}"
+    state: mounted
+  when: d.stat.isblk is defined and d.stat.isblk == False
+
+- name: mkdir {{ item }}
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ nifi_user }}"
+    group: "{{ nifi_group }}"
+    mode: 0775
+  with_items:
+    - "{{ nifi_flowfile_repository }}"
+    - "{{ nifi_content_repository }}"
+    - "{{ nifi_provenance_repository }}"

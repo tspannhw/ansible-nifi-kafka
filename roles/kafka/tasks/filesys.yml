@@ -1,0 +1,45 @@
+---
+# filesystem setup tasks file for kafka
+- stat:
+    path: /dev/sdb
+  register: b
+
+- name: mkfs.xfs /dev/sdb
+  filesystem:
+    fstype: xfs
+    dev: /dev/sdb
+  when: b.stat.isblk is defined and b.stat.isblk == False
+
+- name: mkdir {{ kafka_data_dir | dirname }}
+  file:
+    path: "{{ kafka_data_dir | dirname }}"
+    state: directory
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_user }}"
+    mode: 0775
+  when: b.stat.isblk is defined and b.stat.isblk == False
+
+- name: mount /dev/sdb {{ kafka_data_dir | dirname }}
+  mount:
+    path: "{{ kafka_data_dir | dirname }}"
+    src: /dev/sdb
+    fstype: xfs
+    opts: "{{ xfs_mount_opts }}"
+    state: mounted
+  when: b.stat.isblk is defined and b.stat.isblk == False
+
+- name: mkdir {{ kafka_data_dir }}
+  file:
+    path: "{{ kafka_data_dir }}"
+    state: directory
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    mode: 0775
+
+- name: mkdir {{ kafka_log_dir }}
+  file:
+    path: "{{ kafka_log_dir }}"
+    state: directory
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    mode: 0775

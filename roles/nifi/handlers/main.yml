@@ -1,0 +1,15 @@
+---
+# handlers file for nifi
+- name: restart nifi
+  systemd:
+    name: nifi
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+
+- name: start nifi
+  systemd:
+    name: nifi
+    state: started
+    enabled: yes
+    daemon_reload: yes

@@ -1,0 +1,8 @@
+- hosts: tag_Name_Kafka2
+  roles:
+  - role: common
+  - role: zookeeper
+  - role: kafka
+  become: true
+  become_user: root
+  become_method: sudo

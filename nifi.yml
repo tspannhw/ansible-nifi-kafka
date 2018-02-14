@@ -1,0 +1,8 @@
+- hosts: tag_Name_NiFi
+  roles:
+  - role: common
+  - role: zookeeper
+  - role: nifi
+  become: true
+  become_user: root
+  become_method: sudo
