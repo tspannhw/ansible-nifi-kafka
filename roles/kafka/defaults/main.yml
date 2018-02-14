@@ -11,3 +11,4 @@ kafka_user: root
 kafka_group: root
 kafka_heap_opts: -Xms32g -Xmx32g
 kafka_num_partitions: 3
+kafka_num_replicas: 2

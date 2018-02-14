@@ -44,7 +44,7 @@
     timeout: 60
 
 - name: create {{ item }} topic
-  command: "{{ kafka_install_dir }}/bin/kafka-topics.sh --create --if-not-exists --topic {{ item }} --partitions {{ kafka_num_partitions }} --zookeeper localhost:2181 --replication-factor 3"
+  command: "{{ kafka_install_dir }}/bin/kafka-topics.sh --create --if-not-exists --topic {{ item }} --partitions {{ kafka_num_partitions }} --zookeeper localhost:2181 --replication-factor {{ kafka_num_replicas }}"
   with_items:
     - tweets
     - test
